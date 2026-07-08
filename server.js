@@ -91,13 +91,15 @@ function buildKnownSampleFallback(code, stdout, stderr) {
     return handleKnownSamples(code);
 }
 
-let cachedQrunPath;
+let cachedQrunPath = null;
 
 function resolveQrunPath() {
-    if (cachedQrunPath !== undefined) return cachedQrunPath;
+    if (cachedQrunPath && fs.existsSync(cachedQrunPath)) return cachedQrunPath;
 
     const candidates = [
         process.env.QRUN_PATH,
+        path.resolve(__dirname, '..', 'compiler', 'qrun.exe'),
+        path.resolve(__dirname, '..', 'compiler', 'build', 'qrun.exe'),
         path.resolve(__dirname, '..', 'QuantumLanguage', 'qrun.exe'),
         path.resolve(__dirname, '..', 'QuantumLanguage', 'qrun.bat'),
         path.resolve(__dirname, '..', 'QuantumLanguage', 'build', 'qrun.exe'),
@@ -110,7 +112,8 @@ function resolveQrunPath() {
     return cachedQrunPath;
 }
 
-app.use(cors(ALLOWED_ORIGINS.length ? { origin: ALLOWED_ORIGINS } : {}));
+const corsOrigin = ALLOWED_ORIGINS.length && !ALLOWED_ORIGINS.includes('*') ? ALLOWED_ORIGINS : true;
+app.use(cors({ origin: corsOrigin }));
 app.use(express.json({ limit: '256kb' }));
 
 const executeLimiter = rateLimit({
@@ -154,7 +157,7 @@ app.post('/api/execute', executeLimiter, (req, res) => {
         });
     }
 
-    const allowedExtensions = ['.sa', '.js', '.cpp', '.c'];
+    const allowedExtensions = ['.sa', '.js', '.py', '.cpp', '.c'];
     if (!allowedExtensions.includes(extension)) {
         return res.status(400).json({
             success: false,
@@ -171,7 +174,7 @@ app.post('/api/execute', executeLimiter, (req, res) => {
     if (!qrunPath) {
         return res.status(500).json({
             success: false,
-            error: 'Execution engine not found. Set QRUN_PATH or place qrun.exe in the backend root or in QuantumLogics/QuantumLanguage.'
+            error: 'Execution engine not found. Set QRUN_PATH or place qrun.exe in the backend root or in ../compiler.'
         });
     }
 

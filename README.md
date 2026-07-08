@@ -4,14 +4,18 @@ Remote execution API that powers the QuantumLanguage web IDE. It accepts source
 code from the frontend, runs it through the `qrun` compiler/interpreter, and
 returns the result as JSON.
 
-Recommended folder layout:
+Expected folder layout (monorepo):
 
 ```
-QuantumLogicsLabs/
-├── QuantumLanguage/              # compiler, produces qrun.exe / qrun.bat
-├── QuantumLanguage-Website-Backend/   (this project)
-└── QuantumLanguage-Website-Frontend/
+QuantumLanguage/
+├── backend/     (this project)
+├── compiler/    # C++ source; build.bat / build-fast.bat produce qrun.exe here
+└── frontend/
 ```
+
+`resolveQrunPath()` looks for the built binary at `../compiler/qrun.exe` and
+`../compiler/build/qrun.exe` relative to this folder, or wherever `QRUN_PATH`
+points.
 
 ## Requirements
 
@@ -66,7 +70,7 @@ Request body:
 { "ext": ".sa", "code": "print(\"hello\");" }
 ```
 
-`ext` must be one of `.sa`, `.js`, `.cpp`, `.c`. `code` is the raw source text
+`ext` must be one of `.sa`, `.js`, `.py`, `.cpp`, `.c`. `code` is the raw source text
 (capped at `MAX_CODE_LENGTH` characters).
 
 Response:
