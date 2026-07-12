@@ -1,4 +1,4 @@
-﻿require('dotenv').config();
+require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
@@ -227,6 +227,9 @@ app.post('/api/execute', executeLimiter, (req, res) => {
         );
     });
 });
+
+const { handleChatRequest } = require('./chatHandler');
+app.post('/api/chat', handleChatRequest);
 
 app.use((req, res) => {
     res.status(404).json({ success: false, error: 'Not found.' });
